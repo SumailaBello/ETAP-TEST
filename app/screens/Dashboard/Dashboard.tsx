@@ -129,32 +129,32 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
       }
     }
 
-    useEffect(() => {
-      setAvailabilityInterval();
-    }, []);
+    // useEffect(() => {
+    //   setAvailabilityInterval();
+    // }, []);
 
-    const setAvailabilityInterval = ()=> {
-      setInterval(()=> {
-        checkLocationAvailability();
-      }, 5000)
-    }
+    // const setAvailabilityInterval = ()=> {
+    //   setInterval(()=> {
+    //     checkLocationAvailability();
+    //   }, 5000)
+    // }
 
-    const checkLocationAvailability = async () => {
-      const pos = await Location.getLastKnownPositionAsync({
-        // This should be equal or more than timeInterval in watchPositionAsync
-        maxAge: 5000,
-        // Can use the same as in watchPositionAsync or less
-        requiredAccuracy: currentAccuracy.value,
-      });
-      console.log("POSSS", pos)
-      if (!pos) {
-        const alert: AlertConfig = {
-          title: 'Error',
-          message: 'Location services seems to be disabled, check device settings',
-        }
-        dispatch(toggleAlert(alert));
-      }
-    };
+    // const checkLocationAvailability = async () => {
+    //   const pos = await Location.getLastKnownPositionAsync({
+    //     // This should be equal or more than timeInterval in watchPositionAsync
+    //     maxAge: 5000,
+    //     // Can use the same as in watchPositionAsync or less
+    //     requiredAccuracy: currentAccuracy.value,
+    //   });
+    //   console.log("POSSS", pos)
+    //   if (!pos) {
+    //     const alert: AlertConfig = {
+    //       title: 'Error',
+    //       message: 'Location services seems to be disabled, check device settings',
+    //     }
+    //     dispatch(toggleAlert(alert));
+    //   }
+    // };
     
     // handle data gotten fro watch
     const handleWatchData = async (data: any)=> {
