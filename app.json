@@ -23,6 +23,14 @@
         "backgroundColor": "#ffffff"
       }
     },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow ETAP to use your location."
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     }
