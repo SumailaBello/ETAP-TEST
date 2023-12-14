@@ -27,7 +27,7 @@ const Settings:FC<Screen> = ({route, navigation}) => {
                     />
                 }
                 iconPosition='right'
-                textColor={theme.neutral.main}
+                textColor={theme.dark}
             />
         </Container>
     )

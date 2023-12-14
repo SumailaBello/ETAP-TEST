@@ -41,7 +41,7 @@ interface ListProps {
 const ListItem: React.FC<ListProps> = (props) => {
     const {theme} = useSelector((state: RootState) => state.appSetting);
     return (
-        <Pressable style={[styles.listItem, {opacity: props.disabled ? 0.6 : undefined, borderColor: props.borderColor ?? theme.neutral[100]}]} onPress={ props.disabled ? null : props.onPress} android_ripple={{color: props.rippleColor ?? theme.light[400]}}>
+        <Pressable style={[styles.listItem, {opacity: props.disabled ? 0.6 : undefined, borderColor: props.borderColor ?? theme.neutral[100]}]} onPress={ props.disabled ? null : props.onPress} android_ripple={{color: props.rippleColor ?? theme.light[100]}}>
             <View style={styles.content}>
                 {props.icon && props.iconPosition !== 'right' ? (
                     <View style={{flex: 2, }}>
@@ -49,9 +49,9 @@ const ListItem: React.FC<ListProps> = (props) => {
                     </View>
                 ) : (null)}
                 <View style={{flex: 9, justifyContent: "center"}}>
-                    <MediumText size={14} title={props.title} color={props.textColor ?? theme.dark.main} />
+                    <MediumText size={14} title={props.title} color={props.textColor ?? theme.dark} />
                     {props.subtitle ? (
-                        <RegularText size={12} title={props.subtitle} />
+                        <RegularText size={12} title={props.subtitle} color={theme.neutral.main} />
                     ) : (null)}
                 </View>
                 {props.icon && props.iconPosition === 'right' ? (

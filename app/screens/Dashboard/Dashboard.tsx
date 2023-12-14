@@ -55,18 +55,6 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
       value: 4000,
     });
 
-    const handleBack = ()=> {
-      navigation.goBack();
-      return true
-    }
-
-    useEffect(() => {
-        BackHandler.addEventListener("hardwareBackPress", handleBack);
-        return ()=> {
-            BackHandler.removeEventListener("hardwareBackPress", handleBack);
-        }
-    }, [])
-
     useEffect(() => {
       checkLocationPermission();
       DeviceEventEmitter.addListener('disableTracking', handleStopPress);
@@ -130,51 +118,33 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
       }
     }
 
-    let availabilityInterval: any = useRef();
-    useEffect(() => {
-      setAvailabilityInterval();
-      return ()=> clearInterval(availabilityInterval.current)
-    }, []);
+    let availabilityTimeout: any = useRef();
+    // useEffect(() => {
+    //   setAvailabilityTimeout();
+    //   return ()=> clearTimeout(availabilityTimeout.current)
+    // }, []);
 
-    const setAvailabilityInterval = ()=> {
-      availabilityInterval.current = setInterval(()=> {
-        checkLocationAvailability();
-      }, frequency.value)
-    }
-
-    const checkLocationAvailability = async () => {
-      const pos = await Location.getLastKnownPositionAsync({
-        // This should be equal or more than timeInterval in watchPositionAsync
-        // maxAge: frequency.value,
-        // Can use the same as in watchPositionAsync or less
-        // requiredAccuracy: currentAccuracy.value,
-      });
-      console.log("POSSS", pos)
-      if (!pos) {
-        const alert: AlertConfig = {
-          title: 'Error',
-          message: 'Location services seem to be disabled, check device settings',
-        }
+    const setAvailabilityTimeout = ()=> {
+      availabilityTimeout.current = setTimeout(()=> {
+        // checkLocationAvailability();
         if(locationEnabled) {
-          // setLocationEnabled(false);
+          const alert: AlertConfig = {
+            title: 'Error',
+            message: 'Location services seem to be disabled, check device settings',
+          }
           locationEnabled = false;
           dispatch(toggleAlert(alert));
           handleStopPress();
         }
-        requestPermission();
-      }
-      else {
-        // setLocationEnabled(true);
-        locationEnabled = true;
-        // alert(locationEnabled);
-        requestPermission();
-        // clearInterval(availabilityInterval.current);
-      }
-    };
+        // setAvailabilityTimeout();
+      }, frequency.value * 2)
+    }
     
     // handle data gotten fro watch
     const handleWatchData = async (data: any)=> {
       setLocation(data);
+      locationEnabled = true;
+      clearTimeout(availabilityTimeout.current);
       let region = {...initialRegion};
       region.latitude = data.coords.latitude;
       region.longitude = data.coords.longitude;
@@ -182,6 +152,7 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
       setShowMap(true);
       const userAddress = await getAddress(data.coords.latitude, data.coords.longitude);
       setAddress(userAddress);
+      setAvailabilityTimeout();
     }
 
     // called onregion change
@@ -245,7 +216,7 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
 
     // handle geofence data
     const handleGeofence = ({ data: { eventType, region }, error }: any)=> {
-      console.log(region)
+      console.log(region);
       if (error) {
         // check `error.message` for more details.
         return;
