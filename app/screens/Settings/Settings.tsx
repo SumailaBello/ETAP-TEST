@@ -15,6 +15,7 @@ const Settings:FC<Screen> = ({route, navigation}) => {
     return (
         <Container>
             <ListItem title='Battery Saver' 
+            subtitle='Auto disables tracking when idle'
                 icon={
                     <Switch 
                         value={batterySaver} 

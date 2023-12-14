@@ -39,7 +39,8 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
   const [location, setLocation]: any = useState(null);
   const [address, setAddress]: any = useState(null);
   const [pointsOfInterests, setPointOfInterest] = useState<any>([]);
-  const [locationEnabled, setLocationEnabled] = useState(false);
+  // const [locationEnabled, setLocationEnabled] = useState(false);
+  let locationEnabled: boolean = useRef(false).current;
 
     const [showMap, setShowMap] = useState(false);
     const [isWatching, setIsWatching] = useState(false);
@@ -129,32 +130,47 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
       }
     }
 
-    // useEffect(() => {
-    //   setAvailabilityInterval();
-    // }, []);
+    let availabilityInterval: any = useRef();
+    useEffect(() => {
+      setAvailabilityInterval();
+      return ()=> clearInterval(availabilityInterval.current)
+    }, []);
 
-    // const setAvailabilityInterval = ()=> {
-    //   setInterval(()=> {
-    //     checkLocationAvailability();
-    //   }, 5000)
-    // }
+    const setAvailabilityInterval = ()=> {
+      availabilityInterval.current = setInterval(()=> {
+        checkLocationAvailability();
+      }, frequency.value)
+    }
 
-    // const checkLocationAvailability = async () => {
-    //   const pos = await Location.getLastKnownPositionAsync({
-    //     // This should be equal or more than timeInterval in watchPositionAsync
-    //     maxAge: 5000,
-    //     // Can use the same as in watchPositionAsync or less
-    //     requiredAccuracy: currentAccuracy.value,
-    //   });
-    //   console.log("POSSS", pos)
-    //   if (!pos) {
-    //     const alert: AlertConfig = {
-    //       title: 'Error',
-    //       message: 'Location services seems to be disabled, check device settings',
-    //     }
-    //     dispatch(toggleAlert(alert));
-    //   }
-    // };
+    const checkLocationAvailability = async () => {
+      const pos = await Location.getLastKnownPositionAsync({
+        // This should be equal or more than timeInterval in watchPositionAsync
+        // maxAge: frequency.value,
+        // Can use the same as in watchPositionAsync or less
+        // requiredAccuracy: currentAccuracy.value,
+      });
+      console.log("POSSS", pos)
+      if (!pos) {
+        const alert: AlertConfig = {
+          title: 'Error',
+          message: 'Location services seem to be disabled, check device settings',
+        }
+        if(locationEnabled) {
+          // setLocationEnabled(false);
+          locationEnabled = false;
+          dispatch(toggleAlert(alert));
+          handleStopPress();
+        }
+        requestPermission();
+      }
+      else {
+        // setLocationEnabled(true);
+        locationEnabled = true;
+        // alert(locationEnabled);
+        requestPermission();
+        // clearInterval(availabilityInterval.current);
+      }
+    };
     
     // handle data gotten fro watch
     const handleWatchData = async (data: any)=> {
@@ -166,7 +182,6 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
       setShowMap(true);
       const userAddress = await getAddress(data.coords.latitude, data.coords.longitude);
       setAddress(userAddress);
-      // checkEnabled();
     }
 
     // called onregion change
@@ -218,7 +233,7 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
       const locationRegion = [...list].map((item) => {
         return {
           ...item.geometry.location,
-          radius: 500,
+          radius: 100,
           latitude: item.geometry.location.lat,
           longitude: item.geometry.location.lng
         }
@@ -230,6 +245,7 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
 
     // handle geofence data
     const handleGeofence = ({ data: { eventType, region }, error }: any)=> {
+      console.log(region)
       if (error) {
         // check `error.message` for more details.
         return;
@@ -237,13 +253,13 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
       if (eventType === GeofencingEventType.Enter) {
         showToast('You have entered a new point of interest');
       } else if (eventType === GeofencingEventType.Exit) {
-        showToast('You have exited a point of interes');
+        showToast('You have left a point of interest');
       }
     }
 
     // handles stop button press
     const handleStopPress = async ()=> {
-      locationWatcher.remove();
+      locationWatcher?.remove();
       setIsWatching(false);
     }
 
