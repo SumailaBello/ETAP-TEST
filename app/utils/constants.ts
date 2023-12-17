@@ -79,7 +79,7 @@ const theme: Theme = {
 
 export const locationRationale = {
   title: "Location Permission",
-  message: "ETAP collects location data to enable us display your location on the map, track your current location and display possible points of interests even when the app is closed or not in use.",
+  message: "ETAP collects location data to enable us display your location on the map, track your current location and display possible points of interests even when the app is closed or not in use. Set permission to allow all the time if prompted",
 };
 
 const CONSTANTS =  {

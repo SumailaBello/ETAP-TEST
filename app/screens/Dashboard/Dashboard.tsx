@@ -82,8 +82,8 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
 
     // request location permission and gets location if permission is granted
     const requestPermission = async ()=> {
-      // let { status } = await Location.requestForegroundPermissionsAsync();
-      let { status } = await Location.requestForegroundPermissionsAsync();
+      await Location.requestForegroundPermissionsAsync();
+      let { status } = await Location.requestBackgroundPermissionsAsync();
       // console.log(status)
       if (status !== 'granted') {
         // setErrorMsg('Permission to access location was denied');
@@ -193,7 +193,8 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
         const finalList = newPoints.data.results;
         finalList.length = 10;
         setPointOfInterest(finalList);
-        registerGeofence(finalList);
+        const isGeofencing = await Location.hasStartedGeofencingAsync('GEO_FENCE');
+        !isGeofencing ? registerGeofence(finalList) : null;
       }
       return address
     }
@@ -201,23 +202,31 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
     // register geofence
     const registerGeofence = async (list: Array<any>)=> {
       // console.log('AYAMA', list)
-      const locationRegion = [...list].map((item) => {
-        return {
-          ...item.geometry.location,
-          radius: 100,
-          latitude: item.geometry.location.lat,
-          longitude: item.geometry.location.lng
-        }
-      });
-      // console.log("Region", locationRegion)
-      TaskManager.defineTask('GEO_FENCE', handleGeofence);
-      await Location.startGeofencingAsync('GEO_FENCE', locationRegion)
+      let { status } = await Location.requestBackgroundPermissionsAsync();
+      // console.log(status)
+      if (status === 'granted') {
+        const locationRegion = [...list].map((item) => {
+          return {
+            ...item.geometry.location,
+            radius: 100,
+            latitude: item.geometry.location.lat,
+            longitude: item.geometry.location.lng
+          }
+        });
+        // console.log("Region", locationRegion)
+        TaskManager.defineTask('GEO_FENCE', handleGeofence);
+        await Location.startGeofencingAsync('GEO_FENCE', locationRegion);
+      }
+      else {
+        showToast('Unable to start geofencing. Check permission settings')
+      }
     }
 
     // handle geofence data
     const handleGeofence = ({ data: { eventType, region }, error }: any)=> {
       console.log(region);
       if (error) {
+        // console.log(error)
         // check `error.message` for more details.
         return;
       }
@@ -232,6 +241,7 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
     const handleStopPress = async ()=> {
       locationWatcher?.remove();
       setIsWatching(false);
+      clearTimeout(availabilityTimeout.current);
     }
 
     // handles play button press
@@ -239,6 +249,7 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
       // locationWatcher.remove();
       setIsWatching(true);
       watchPosition();
+      // setAvailabilityTimeout();
     }
 
     return (
@@ -250,7 +261,7 @@ const Dashboard: React.FC<Screen> = ({navigation, route}) => {
               customMapStyle={mapStyle}
               initialRegion={initialRegion}
               provider = {PROVIDER_GOOGLE}
-              showsUserLocation
+              showsUserLocation={false}
               minZoomLevel = {12}
               ref = {mapRef}
               showsCompass = {false}

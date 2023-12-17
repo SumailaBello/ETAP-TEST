@@ -1,0 +1,25 @@
+{
+  "cli": {
+    "version": ">= 5.2.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "gradleCommand": ":app:assembleDebug"
+      }
+    },
+    "production": {
+      "env": {
+        "ANDROID_SDK_ROOT": "/Users/bello/Library/Android/sdk"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
